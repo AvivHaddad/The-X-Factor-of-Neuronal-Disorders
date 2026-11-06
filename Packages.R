@@ -1,36 +1,7 @@
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-
-BiocManager::install("hugene10sttranscriptcluster.db")
-
 BiocManager::install("GEOquery")
-BiocManager::install("Biobase")
-BiocManager::install("limma")
-BiocManager::install("edgeR")
-BiocManager::install("GSEABase")
-BiocManager::install("org.Hs.eg.db")
-BiocManager::install("DESeq2")
 install.packages(dplyr)
-BiocManager::install('seandavi/GEOquery')
-
-#if (!require('remotes')) install.packages('remotes')
-#install.packages('installr')
-#install.Rtools()
-#remotes::install_github('talgalili/installr')
-
-install(gplots)
-install(ggrepel)
-
-BiocManager::install("clusterProfiler")
-BiocManager::install("pathview")
-BiocManager::install("enrichplot")
-BiocManager::install("fgsea")
-
-install("DT")
-install.packages("tibble")
 install.packages("caret")
-BiocManager::install("genefilter")
-install.packages("remotes")
-remotes::install_github("gbm-developers/gbm3")
 install.packages("e1071")
 install.packages("knitr")
