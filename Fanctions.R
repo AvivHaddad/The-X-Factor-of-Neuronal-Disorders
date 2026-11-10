@@ -17,7 +17,7 @@ cross.validation.SVM <- function(
 
   } else {
 
-    folds <- make_donor_folds(
+    folds <- make.donor.folds(
       labels = data$group,
       donor_id = donor_id,
       k = x
@@ -217,7 +217,7 @@ cross.validation.SVM_diff <- function (train,test,x,seed,path,name){
 
 }
 
-make_donor_folds <- function(labels, donor_id, k = 10) {
+make.donor.folds <- function(labels, donor_id, k = 10) {
 
   donors <- unique(donor_id)
 
