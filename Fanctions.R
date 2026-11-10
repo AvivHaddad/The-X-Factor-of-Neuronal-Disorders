@@ -1,19 +1,43 @@
-cross.validation.SVM <- function (data,x,seed,path,name){
+cross.validation.SVM <- function(
+  data, x, seed, path, name, donor_id = NULL) {
   acc_list <- list()
   data$group <- as.factor(data$group)
 
 
   set.seed(seed = seed)
 
-  folds <- createFolds(data$group,
-                       k = x, list = TRUE,
-                       returnTrain = TRUE)
+  if (is.null(donor_id)) {
+
+    folds <- caret::createFolds(
+      data$group,
+      k = x,
+      list = TRUE,
+      returnTrain = TRUE
+    )
+
+  } else {
+
+    folds <- make_donor_folds(
+      labels = data$group,
+      donor_id = donor_id,
+      k = x
+    )
+
+  }
 
   for (i in 1:x){
     train_idx <- folds[[i]]
     test_idx <- setdiff(seq_len(nrow(data)),train_idx)
-    training <- data[train_idx,]
-    test <- data[test_idx,]
+    training <- data[train_idx, , drop = F]
+    test <- data[test_idx, , drop = F]
+    if (!is.null(donor_id)) {
+      stopifnot(
+        length(intersect(
+          donor_id[train_idx],
+          donor_id[test_idx]
+        )) == 0L
+      )
+    }
     # Splitting the genes and the groups made it possible for the function to run as it detailed to the SVM what it should predict.
     X_train <- training[
       , setdiff(names(training), "group"),
@@ -145,13 +169,16 @@ cross.validation.SVM_diff <- function (train,test,x,seed,path,name){
 
   set.seed(seed = seed)
 
-  folds <- createFolds(train$group,
-                       k = x, list = TRUE,
-                       returnTrain = TRUE)
+    folds <- caret::createFolds(
+      train$group,
+      k = x,
+      list = TRUE,
+      returnTrain = TRUE
+    )
 
   for (i in 1:x){
     train_idx <- folds[[i]]
-    training <- train[-train_idx,,drop = F]
+    training <- train[train_idx,,drop = F]
 
 
 
@@ -188,6 +215,28 @@ cross.validation.SVM_diff <- function (train,test,x,seed,path,name){
   }
   saveRDS(acc_list, paste0(path,"acc_list","_",name))
 
+}
+
+make_donor_folds <- function(labels, donor_id, k = 10) {
+
+  donors <- unique(donor_id)
+
+  donor_labels <- labels[match(donors, donor_id)]
+
+  if (any(table(donor_labels) < k)) {
+    stop("Not enough donors per diagnosis for the requested number of folds.")
+  }
+
+  donor_folds <- caret::createFolds(
+    factor(donor_labels),
+    k = k,
+    list = TRUE,
+    returnTrain = TRUE
+  )
+
+  lapply(donor_folds, function(i) {
+    which(donor_id %in% donors[i])
+  })
 }
 
 export_results_latex <- function(path, name, tag) {
@@ -250,7 +299,7 @@ export_results_latex <- function(path, name, tag) {
 
   cm_tex <- paste0(
     "\\begin{table}[H]\n\n",
-    "\\caption{Confusion matrix (\\%) for ", name_pretty, "}\n",
+    "\\caption{Confusion matrix (\\%) for ", name_clean, "}\n",
     "\\label{tab:cm_", name, "}\n",
     "\\centering\n",
     "\\vspace{-0pt}\n",
